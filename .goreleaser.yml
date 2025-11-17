@@ -10,10 +10,17 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
+    goarch:
+      - amd64
+      - arm64
 
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Version }}_{{- .Os }}_{{ .Arch }}"
-
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - ocserv-exporter
 checksum:
   name_template: "checksums.txt"
 
