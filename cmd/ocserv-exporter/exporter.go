@@ -89,11 +89,43 @@ func (e *Exporter) updateUsers() {
 	vpnUserTX.Reset()
 	vpnUserRX.Reset()
 	vpnUserStartTime.Reset()
+	// Reset new aggregated per-user metrics
+	vpnUserAggRX.Reset()
+	vpnUserAggTX.Reset()
+	vpnUserTotal.Reset()
+	vpnUserSessions.Reset()
 	users, err := e.occtlCli.ShowUsers()
 	if err != nil {
 		log.Errorf("Failed to get users details: %v", err)
 		occtlUsersScrapeError.WithLabelValues().Inc()
 		return
+	}
+	// user → aggregated stats
+	type agg struct {
+		RX       int64
+		TX       int64
+		Sessions int64
+	}
+	aggMap := make(map[string]*agg)
+	for _, u := range users {
+		if _, ok := aggMap[u.Username]; !ok {
+			aggMap[u.Username] = &agg{}
+		}
+		aggMap[u.Username].RX += u.RawRX
+		aggMap[u.Username].TX += u.RawTX
+		aggMap[u.Username].Sessions++
+	}
+	// Export aggregated metrics
+	for username, a := range aggMap {
+		total := a.RX + a.TX
+
+		vpnUserAggRX.WithLabelValues(username).Set(float64(a.RX))
+		vpnUserAggTX.WithLabelValues(username).Set(float64(a.TX))
+		vpnUserTotal.WithLabelValues(username).Set(float64(total))
+		vpnUserSessions.WithLabelValues(username).Set(float64(a.Sessions))
+
+		log.Debugf("User %s: RX=%d TX=%d TOTAL=%d SESSIONS=%d",
+			username, a.RX, a.TX, total, a.Sessions)
 	}
 
 	for _, user := range users {

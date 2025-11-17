@@ -94,6 +94,25 @@ var (
 		Name: "vpn_user_start_time_seconds",
 		Help: "Start time of user session since unix epoch in seconds.",
 	}, []string{"username", "remote_ip", "mtu", "vpn_ipv4", "vpn_ipv6", "device"})
+	vpnUserAggRX = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "vpn_user_aggregated_rx_bytes",
+		Help: "Aggregated RX bytes of a user (summed across sessions).",
+	}, []string{"username"})
+
+	vpnUserAggTX = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "vpn_user_aggregated_tx_bytes",
+		Help: "Aggregated TX bytes of a user (summed across sessions).",
+	}, []string{"username"})
+
+	vpnUserTotal = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "vpn_user_total_bytes",
+		Help: "Total bytes (RX+TX) used by a user across all sessions.",
+	}, []string{"username"})
+
+	vpnUserSessions = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "vpn_user_sessions",
+		Help: "Number of active sessions for a user.",
+	}, []string{"username"})
 )
 
 func main() {
@@ -125,6 +144,10 @@ func main() {
 		vpnUserTX,
 		vpnUserRX,
 		vpnUserStartTime,
+		vpnUserAggRX,
+		vpnUserAggTX,
+		vpnUserTotal,
+		vpnUserSessions,
 	)
 
 	occtlCli, err := occtl.NewClient(&occtl.OcctlCommander{})
