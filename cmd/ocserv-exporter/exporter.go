@@ -115,7 +115,7 @@ func (e *Exporter) updateUsers() {
 		aggMap[u.Username].TX += u.RawTX
 		aggMap[u.Username].Sessions++
 	}
-	// Export aggregated metrics. The aggregated need to be modified.
+	// Export aggregated metrics. The aggregated need to be modified.dd
 	for username, a := range aggMap {
 		total := a.RX + a.TX
 
